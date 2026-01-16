@@ -426,6 +426,6 @@
 
    1 See the Event Identifiers Standard and Technical Note
 
-   2 The NMRA uses “Bid-Drectional Communications” and the RailCommunity uses RailCom to refer to the
+   2 The NMRA uses “Bi-Directional Communications” and the RailCommunity uses RailCom to refer to the
    ability of a DCC decoder to return communications to a detector.  Note that RailCom is the registered
-   trademake of Lenx GmbH in Germany.
+   trademark of Lenz GmbH in Germany.
