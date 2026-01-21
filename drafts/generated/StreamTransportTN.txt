@@ -3,7 +3,7 @@
    This Technical Note contains informative discussion and background for the corresponding “OpenLCB Stream
    Transport Standard”.
 
-   Some wire protocols can supoprt only very short packets/frames, e.g. CAN with a limited header and data
+   Some wire protocols can support only very short packets/frames, e.g. CAN with a limited header and data
    payload.  OpenLCB needs to be able to move large chunks of data that may not be bound by any size.
 
    A pair of nodes may be able, but are not required, to maintain up to 255 simultaneously unique
@@ -42,9 +42,11 @@
 
      * MTI allocation table.
 
-   Message Formats
+    
 
-  2.3.1 Stream Initiate Request
+2.4 Definitions
+
+  2.4.1 Stream Initiate Request
 
    Stream. Other examples of streaming protocols would be TCP, or a unix pipe. The big difference to TCP is
    that the OpenLCB streams are uni-directional, whereas TCP connections provide bi-directional data
@@ -77,7 +79,7 @@
    is always sent along with the streaming messages so that the receiving node can perform a direct lookup
    of the data associated with the stream and not need to do a search for the matching state/buffer.
 
-2.4 Message Formats
+2.5 Message Formats
 
    Every stream message type contains one or both of a Source Stream ID and/or Destination Stream ID.  An
    individual stream can be identified by the combination of:
@@ -106,17 +108,17 @@
    this value for the purpose of marking a stream mapping as closed or available-for-use without requiring
    an additional memory location to hold this information.
 
-  2.4.1 Stream Initiate Request
+  2.5.1 Stream Initiate Request
 
    This is an addressed message sent from the stream source node to the stream destination node.  It
    contains a unique Source Stream ID, a suggested Max Buffer Size (in bytes), reserved flag bits, and
    optionally a Stream Content Type.
 
    The suggested Max Buffer Size chosen by the stream source is somewhat arbitrary, but could be
-   implementation specific.  The resulting final Max Buffer Size of the stream may be smaller, but must
+   implementation specific.  The resulting final Max Buffer Size of the stream may be smaller but must
    never be larger than this initially suggested value.
 
-  2.4.2 Stream Initiate Reply
+  2.5.2 Stream Initiate Reply
 
    This is an addressed message sent from the stream destination node to the stream source node in response
    to a Stream Initiate Request.  It contains a unique Destination Stream ID, a unique Source Stream ID, a
@@ -125,7 +127,7 @@
    The final Max Buffer Size must be less than or equal to the suggested Max Buffer Size in the Stream
    Initiate Request being replied to.
 
-  2.4.3 Stream Data Send
+  2.5.3 Stream Data Send
 
    This is an addressed message sent from the stream source node to the stream destination node.  It
    contains the Destination Stream ID followed by the payload bytes.
@@ -140,7 +142,7 @@
    result in the destination node (and any gateways in between) flushing any internal buffering for
    efficiency that may be occurring.
 
-  2.4.4 Stream Data Proceed
+  2.5.4 Stream Data Proceed
 
    This is an addressed message sent from the stream destination node to the stream source node.  The
    destination node sends this message when it is able to receive an additional Max Buffer Size bytes of
@@ -150,28 +152,20 @@
    this mechanism, the count internal to the stream source node could increment to a value larger than Max
    Buffer Size.
 
-  2.4.5 Stream Ping
-
-    
-
-  2.4.6 Stream Pong
-
-    
-
-  2.4.7 Stream Data Complete
+  2.5.5 Stream Data Complete
 
    This is an addressed message sent from the stream source node to the stream destination node for the
    purpose of gracefully shutting down a stream.  This message contains a Source Stream ID, Destination
    Stream ID, and optionally, a 4-byte value representing the total number of data bytes sent while the
-   stream was open.  Once this message is sent, the stream source node may free up the previously allocated
-   Source Stream ID, along with any metadata associated with the stream.
+   stream was open.  Once this message is received, the stream source node may free up the previously
+   allocated Source Stream ID, along with any metadata associated with the stream.
 
-2.5 States
+2.6 States
 
-   A stream either exists or doesn't; those are states.  There are also some un-named intermediate states
-   during setup and take down.
+   A stream either exists or doesn't; those are states.  There are also some intermediate states during
+   setup and take down.
 
-2.6 Interactions
+2.7 Interactions
 
    Optionally, the destination can request that the source start a transfer. This uses some mechanism not
    discussed here, e.g. Datagram messages.
@@ -292,13 +286,13 @@
    data transfer” format can also be coded entirely in the header. This then allows 8 bytes of data per
    transfer if the Source Stream ID and Destination Stream ID need not be carried. By specifying that only
    one stream can be transferred on a CAN link between any two nodes at a time, no Stream ID would be
-   needed. Although initially consider, this it thought to be too inflexible. Instead, we chose a format
-   where the Source Stream ID is carried, reducing the payload to seven bytes per frame. This requires that
-   the Source Stream ID be unique among source-destination node pairs, without relying on the Destination
-   Stream ID to be part of the unique stream identification. Since a node knows that it's originating the
-   stream, this can be ensured in advance for point-to-point connections. Gateways will need to track the
-   Destination Stream ID to restore it to the full format. Since they are tracking the stream in any case
-   for buffering purposes, this is thought to be not a large problem.
+   needed. Although initially considered, this was thought to be too inflexible. Instead, we chose a format
+   where the Destination Stream ID is carried, reducing the payload to seven bytes per frame. This requires
+   that the Destination Stream ID be unique among source-destination node pairs, without relying on the
+   Source Stream ID to be part of the unique stream identification. Since a node knows that it's
+   originating the stream, this can be ensured in advance for point-to-point connections. Gateways will
+   need to track the Source Stream ID to restore it to the full format. Since they are tracking the stream
+   in any case for buffering purposes, this is thought to be not a large problem.
 
 3.4 Implementation Notes
 
@@ -331,27 +325,25 @@
 
    2.3 References and Context
 
-   2.3.1 Stream Initiate Request
-
-   2.4 Message Formats
+   2.4 Definitions
 
    2.4.1 Stream Initiate Request
 
-   2.4.2 Stream Initiate Reply
+   2.5 Message Formats
 
-   2.4.3 Stream Data Send
+   2.5.1 Stream Initiate Request
 
-   2.4.4 Stream Data Proceed
+   2.5.2 Stream Initiate Reply
 
-   2.4.5 Stream Ping
+   2.5.3 Stream Data Send
 
-   2.4.6 Stream Pong
+   2.5.4 Stream Data Proceed
 
-   2.4.7 Stream Data Complete
+   2.5.5 Stream Data Complete
 
-   2.5 States
+   2.6 States
 
-   2.6 Interactions
+   2.7 Interactions
 
    3 Background Information
 
