@@ -46,8 +46,6 @@
 
 2.4 Definitions
 
-  2.4.1 Stream Initiate Request
-
    Stream. Other examples of streaming protocols would be TCP, or a unix pipe. The big difference to TCP is
    that the OpenLCB streams are uni-directional, whereas TCP connections provide bi-directional data
    transport. TCP also allows some out-of-band information to be sent during a live connection, although
@@ -69,7 +67,7 @@
    disambiguate between multiple concurrently open streams between two given nodes. A stream is uniquely
    identified by (Source Node ID, Destination Node ID, Source Stream ID) triple, as well as the (Source
    Node ID, Destination Node ID, Destination Stream ID) triple. This means that Source Stream ID, by
-   itself, is not required to be unique; neither Destination Stream ID, b itself.
+   itself, is not required to be unique; neither Destination Stream ID by itself.
 
    There is a large flexibility on the implementation for how these IDs can be used. A small node may use
    only one fixed stream ID and not ever allow multiple streams to be open concurrently. A medium-sized
@@ -81,8 +79,8 @@
 
 2.5 Message Formats
 
-   Every stream message type contains one or both of a Source Stream ID and/or Destination Stream ID.  An
-   individual stream can be identified by the combination of:
+   Every stream message type contains one or both of a valid Source Stream ID and/or Destination Stream ID.
+    An individual stream can be identified by a combination of:
 
     1. Source Stream ID
 
@@ -111,8 +109,8 @@
   2.5.1 Stream Initiate Request
 
    This is an addressed message sent from the stream source node to the stream destination node.  It
-   contains a unique Source Stream ID, a suggested Max Buffer Size (in bytes), reserved flag bits, and
-   optionally a Stream Content Type.
+   contains a suggested Max Buffer Size (in bytes), reserved flag bits, a unique Source Stream ID, an
+   optional proposed Destination Stream ID and optionally a Stream Content Type.
 
    The suggested Max Buffer Size chosen by the stream source is somewhat arbitrary, but could be
    implementation specific.  The resulting final Max Buffer Size of the stream may be smaller but must
@@ -121,8 +119,9 @@
   2.5.2 Stream Initiate Reply
 
    This is an addressed message sent from the stream destination node to the stream source node in response
-   to a Stream Initiate Request.  It contains a unique Destination Stream ID, a unique Source Stream ID, a
-   final Max Buffer Size (in bytes), and an error code field.
+   to a Stream Initiate Request.  It contains a final Max Buffer Size (in bytes), a field for flags, a
+   unique Source Stream ID, a unique Destination Stream ID, and in the case of an error an optional
+   human-readable null-terminated string describing the error.
 
    The final Max Buffer Size must be less than or equal to the suggested Max Buffer Size in the Stream
    Initiate Request being replied to.
@@ -156,9 +155,9 @@
 
    This is an addressed message sent from the stream source node to the stream destination node for the
    purpose of gracefully shutting down a stream.  This message contains a Source Stream ID, Destination
-   Stream ID, and optionally, a 4-byte value representing the total number of data bytes sent while the
-   stream was open.  Once this message is received, the stream source node may free up the previously
-   allocated Source Stream ID, along with any metadata associated with the stream.
+   Stream ID, optional two bytes of flags, and optionally, a 4-byte value representing the total number of
+   data bytes sent while the stream was open.  Once this message is received, the stream source node may
+   free up the previously allocated Source Stream ID, along with any metadata associated with the stream.
 
 2.6 States
 
@@ -170,22 +169,18 @@
    Optionally, the destination can request that the source start a transfer. This uses some mechanism not
    discussed here, e.g. Datagram messages.
 
-   The source sends an "Stream Initiate Request (Addressed)" to the destination. It carries a "Max Buffer
-   Size" value (2 bytes), a “Type Included” boolean flag (1 bit in a byte; see below for meaning) and a
-   "Source Stream ID" (1 byte) in the data section. The combination of source, destination, and Source
-   Stream ID must uniquely identify this stream transmission.
+   The source sends a "Stream Initiate Request (Addressed)" to the destination. It carries a "Max Buffer
+   Size" value (2 bytes), and a "Source Stream ID" (1 byte) in the data section. The combination of source,
+   destination, and Source Stream ID must uniquely identify this stream transmission.
 
    If the destination node does not wish to receive the stream, it returns a "Stream Initiate Reply
-   (Addressed)" marked “reject”, with a "Max Buffer Size" value (2 bytes) of zero, the “Type Included”
-   boolean flag (1 bit in a flag byte), "Source Stream ID" (1 byte) and "Destination Stream ID" (1 byte).
-   The message includes flags set to represent exactly one of several conditions:
+   (Addressed)" marked “reject”, with a "Max Buffer Size" value (2 bytes) of zero, "Source Stream ID" (1
+   byte) and "Destination Stream ID" (1 byte). The message includes flags set to represent exactly one of
+   several conditions:
 
    “Permanent error” - This node does not process streams, will not accept a stream from this source, or
    for some other reason will not ever be able to accept this stream. The Stream Initiate Request should
    not be retransmitted. Optionally, the node can mark the reply with one or more of several conditions:
-
-   “Information Logged” - the node supports the logging protocol and information was logged for later
-   retrieval.
 
    “Invalid Stream Request” - something made the stream request improper, such as longer than the max
    permitted length. Proper requests might be acceptable.
@@ -202,25 +197,25 @@
    frames making up a stream. Sender can try again if desired.
 
    If the destination node wishes to receive the stream, it returns a "Stream Initiate Reply (Addressed)"
-   marked “accept”, with a "Max Buffer Size" value (2 bytes), the “Type Included” boolean flag (1 bit in a
-   byte), "Source Stream ID" (1 byte) and "Destination Stream ID" (1 byte).  The "Max Buffer Size" is less
-   than or equal to the value in the Initiate Stream Request, and is the negotiated buffer size for this
-   transfer. If it's zero, the request to start the stream has been rejected, and the exchange is over. The
-   source can try again later. The Source Stream ID is the same as the value in the Initiate Stream
-   Request, and is returned for identification and the convenience of the source. The destination doesn't
-   do anything with it except return it. The source can use it to match up multiple operations, as a way of
-   identifying buffers, or for any other purpose. The Destination Stream ID is used to tag the data sent to
-   the destination. It has no meaning to the source. The destination can, but need not, use it to associate
-   the stream data with a particular buffer or usage. Multiple simultaneous streams can use the same
-   Destination Stream ID value.
+   marked “accept”, with a "Max Buffer Size" value (2 bytes), "Source Stream ID" (1 byte) and "Destination
+   Stream ID" (1 byte).  The "Max Buffer Size" is less than or equal to the value in the Initiate Stream
+   Request, and is the negotiated buffer size for this transfer. If it's zero, the request to start the
+   stream has been rejected, and the exchange is over. The source can try again later.  The Source Stream
+   ID is the same as the value in the Initiate Stream Request, and is returned for identification and the
+   convenience of the source. The destination doesn't do anything with it except return it. The source can
+   use it to match up multiple operations, as a way of identifying buffers, or for any other purpose. The
+   Destination Stream ID is used to tag the data sent to the destination. It has no meaning to the source.
+   The destination can, but need not, use it to associate the stream data with a particular buffer or
+   usage. Multiple simultaneous streams originating  in different nodes can use the same Destination Stream
+   ID value.
 
    The source starts sending bytes using Stream Data Send (Addressed) messages, each carrying up to the
    message size limit on the particular wire protocol and the Source and Destination Stream ID. After
    sending exactly Max Buffer Size bytes in one or more messages, the source pauses.
 
-   If the “Type Included” flag was true during initialization, the first 6 bytes of the data are a unique
+   If a Stream Type was included during initialization, the first 6 bytes of the data are the same unique
    data-type indicator. These are allocated the same way that Node IDs, etc, are allocated, but from a
-   separate name space. If that “Type Included” flag is false, some higher-level protocol must identify the
+   separate name space. If no Stream Type was included, some higher-level protocol must identify the
    data-type of the stream data. The idea is that a stream is a lot of data; there's not much use for one
    otherwise because of the setup overhead (code and time). So six bytes for a stream type identifier isn't
    a large cost (unlike e.g. a datagram, where it would be a 10% overhead). A UID as a Stream type ID has
@@ -263,10 +258,9 @@
    stream at the front. As part of their private protocol, they can use whatever structure they'd like for
    the data.
 
-   General content types can be defined using unique identifiers. The “Type Included” flag identifies that
-   the first eight bytes of stream data are to be interpreted as stream content type information. These can
-   be allocated via the same mechanisms as EventIDs. Well-known ones will be published by OpenLCB. These
-   identifiers are recorded in a separate worksheet.
+   General content types can be defined using unique identifiers. These can be allocated via the same
+   mechanisms as EventIDs. Well-known ones will be published by OpenLCB. These identifiers are recorded in
+   a separate worksheet.
 
 3.2 Buffer Size
 
@@ -326,8 +320,6 @@
    2.3 References and Context
 
    2.4 Definitions
-
-   2.4.1 Stream Initiate Request
 
    2.5 Message Formats
 
