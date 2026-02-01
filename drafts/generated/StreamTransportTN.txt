@@ -1,7 +1,7 @@
                                                 1 Introduction
 
-   This Technical Note contains informative discussion and background for the corresponding “OpenLCB Stream
-   Transport Standard”.
+   This Technical Note contains informative discussion and background for the corresponding OpenLCB Stream
+   Transport Standard.
 
    Some wire protocols can support only very short packets/frames, e.g. CAN with a limited header and data
    payload.  OpenLCB needs to be able to move large chunks of data that may not be bound by any size.
@@ -49,7 +49,7 @@
    Stream. Other examples of streaming protocols would be TCP, or a unix pipe. The big difference to TCP is
    that the OpenLCB streams are uni-directional, whereas TCP connections provide bi-directional data
    transport. TCP also allows some out-of-band information to be sent during a live connection, although
-   this is a rately used feature. OpenLCB does not allow out-of-band information; any out-of-band
+   this is a rarely used feature. OpenLCB does not allow out-of-band information; any out-of-band
    information needs to be sent using different protocols. It is expected that for most streaming
    applications the application level protocol will define a sequence of actions, where some may use direct
    OpenLCB messages, others may use datagrams, and the stream
@@ -60,8 +60,8 @@
    a PC-based configuration tool) the sends a datagram to the server (say an OpenLCB board, or a train
    node), requesting a read using streams, but the server will be the Source node and the client will be
    the Destination node. This also means that the server will send the Stream Initiate Request message to
-   the client. Also the Source Stream ID will be assigned by the server, and the destination Stream ID will
-   be assigned by the client.
+   the client. The Source Stream ID will be assigned by the server, and the destination Stream ID will be
+   assigned by the client.
 
    Source Stream ID and Destination Stream ID, from a formal correctness perspective, are only used to
    disambiguate between multiple concurrently open streams between two given nodes. A stream is uniquely
@@ -108,28 +108,28 @@
 
   2.5.1 Stream Initiate Request
 
-   This is an addressed message sent from the stream source node to the stream destination node.  It
-   contains a suggested Max Buffer Size (in bytes), reserved flag bits, a unique Source Stream ID, an
-   optional proposed Destination Stream ID and optionally a Stream Content Type.
+   Stream Initiate Request is an addressed message sent from the stream source node to the stream
+   destination node.  It contains a suggested Max Buffer Size (in bytes), reserved flag bits, a unique
+   Source Stream ID, an optional proposed Destination Stream ID and optionally a Stream Content Type.
 
-   The suggested Max Buffer Size chosen by the stream source is somewhat arbitrary, but could be
+   The suggested Max Buffer Size chosen by the stream source is somewhat arbitrary and can be
    implementation specific.  The resulting final Max Buffer Size of the stream may be smaller but must
    never be larger than this initially suggested value.
 
   2.5.2 Stream Initiate Reply
 
-   This is an addressed message sent from the stream destination node to the stream source node in response
-   to a Stream Initiate Request.  It contains a final Max Buffer Size (in bytes), a field for flags, a
-   unique Source Stream ID, a unique Destination Stream ID, and in the case of an error an optional
-   human-readable null-terminated string describing the error.
+   Stream Initiate Reply is an addressed message sent from the stream destination node to the stream source
+   node in response to a Stream Initiate Request.  It contains a final Max Buffer Size (in bytes), a field
+   for flags, a unique Source Stream ID, a unique Destination Stream ID, and in the case of an error an
+   optional human-readable null-terminated string describing the error.
 
    The final Max Buffer Size must be less than or equal to the suggested Max Buffer Size in the Stream
    Initiate Request being replied to.
 
   2.5.3 Stream Data Send
 
-   This is an addressed message sent from the stream source node to the stream destination node.  It
-   contains the Destination Stream ID followed by the payload bytes.
+   Stream Data Send is an addressed message sent from the stream source node to the stream destination
+   node.  It contains the Destination Stream ID followed by the payload bytes.
 
    The stream source node must maintain an internal count that is initialized to Max Buffer Size.  For
    every single payload byte sent, the source must decrement this count by one.  A single Stream Data Send
@@ -143,21 +143,22 @@
 
   2.5.4 Stream Data Proceed
 
-   This is an addressed message sent from the stream destination node to the stream source node.  The
-   destination node sends this message when it is able to receive an additional Max Buffer Size bytes of
-   data beyond what the stream destination node has already informed the stream source node it can receive.
-    When the stream source node receives this message, it can add Max Buffer Size to its internal count of
-   bytes that it may send with Stream Data Send messages.  It is possible, and acceptable, that through
-   this mechanism, the count internal to the stream source node could increment to a value larger than Max
-   Buffer Size.
+   Stream Data Proceed is an addressed message sent from the stream destination node to the stream source
+   node.  The destination node sends this message when it is able to receive an additional Max Buffer Size
+   bytes of data beyond what the stream destination node has already informed the stream source node it can
+   receive.  When the stream source node receives this message, it can add Max Buffer Size to its internal
+   count of bytes that it may send with Stream Data Send messages.  It is possible, and acceptable, that
+   through this mechanism, the count internal to the stream source node could increment to a value larger
+   than Max Buffer Size.
 
   2.5.5 Stream Data Complete
 
    This is an addressed message sent from the stream source node to the stream destination node for the
    purpose of gracefully shutting down a stream.  This message contains a Source Stream ID, Destination
    Stream ID, optional two bytes of flags, and optionally, a 4-byte value representing the total number of
-   data bytes sent while the stream was open.  Once this message is received, the stream source node may
-   free up the previously allocated Source Stream ID, along with any metadata associated with the stream.
+   data bytes sent while the stream was open.  Once this message is received, the stream destination node
+   may free up the previously allocated Source Stream ID, along with any metadata associated with the
+   stream.
 
 2.6 States
 

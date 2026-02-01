@@ -125,7 +125,7 @@
 5.3 Stream Data Send
 
    Name             Dest ID Event ID Common MTI Data Content
-                                                1 – <Max Buffer Size + 1> Bytes
+                                                1 to <Max Buffer Size + 1> Bytes
    Stream Data Send Y       N        0x1F88     Byte 0     Destination Stream ID, value 0xFF is reserved. 
                                                 Byte 1 ... Stream payload bytes.                          
 
@@ -190,10 +190,9 @@
    higher-level protocol specification requires. The Source node proposes a Max Buffer Size for the
    transmission. Sending this message transitions the stream to the Initiated state.
 
-   The Destination node is then required to send a Stream Initiate Reply, or one of the general error
-   messages defined in the Message Network Standard, such as Optional Interaction rejected, or Terminate
-   Due To Error. When possible, a Stream Initiate Reply with an error code should be sent instead of a
-   general error message.
+   The Destination node is then required to send a Stream Initiate Reply, or the general error message
+   Optional Interaction Rejected as defined in the Message Network Standard. When possible, a Stream
+   Initiate Reply with an error code should be sent instead of a general error message.
 
    To accept the stream and transition to Open state, the Destination node must allocate a Destination
    Stream ID that's not currently in use with the same Source node, reply with a Stream Initiate Reply
@@ -203,13 +202,13 @@
    transitions the stream to Open state, with the Max Buffer Size as entered in the Stream Initiate Reply
    message.
 
-   To reject the stream, the Destination node must send a general error message, or a Stream Initiate Reply
-   message with the appropriate Source Stream ID, zero Max Buffer Size and the error code set to a value
-   with the Accept bit clear and one of the Temporary error or Permanent error bits set. When possible, a
-   Stream Initiate Reply should be sent instead of a general error message. When sending a general error
-   message, the MTI value must be set to the MTI of Stream Initiate Request. A rejected stream is
-   transitioned to the Closed state. If needed, the interaction may be re-started using the higher-level
-   protocol.
+   To reject the stream, the Destination node must send an Optional Interaction Rejected error message, or
+   a Stream Initiate Reply message with the appropriate Source Stream ID, zero Max Buffer Size and the
+   error code with either the Temporary error or Permanent error bits set. When possible, a Stream Initiate
+   Reply should be sent instead of the Optional Interaction Rejected error message. When sending an
+   Optional Interaction Rejected, the MTI value must be set to the MTI of Stream Initiate Request. A
+   rejected stream is transitioned to the Closed state. If needed, the interaction may be re-started using
+   the higher-level protocol.
 
 7.2 Opening a stream without announcement
 
@@ -251,10 +250,9 @@
 
    The Stream Data Complete message transitions the stream to Closed state.
 
-   The Stream is closed if the Destination node sends a Terminate Due To Error or Optional Interaction
-   Rejected message with the MTI value of Stream Data Send; or if the Source node sends a Terminate Due To
-   Error or Optional Interaction Rejected message with the MTI value of Stream Data Proceed. When possible,
-   the specific MTI value should be used.
+   The Stream is closed if the Destination node sends a Terminate Due To Error message with the MTI value
+   of Stream Data Send; or if the Source node sends a Terminate Due To Error message with the MTI value of
+   Stream Data Proceed.
 
 7.5 Special provisions for Gateways
 
@@ -273,7 +271,7 @@
    A Gateway must delay forwarding the Stream Data Complete message until its internal buffer is drained.
 
    A Gateway must drop all data in its internal buffer and all delayed messages if the Stream is terminated
-   with an error message of Terminate Due To Error or Optional Interaction Rejected.
+   with an error message of Terminate Due To Error.
 
                                   8 Adaptation to CAN Transport (Normative)
 
