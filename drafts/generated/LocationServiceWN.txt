@@ -281,29 +281,26 @@
 
    0b00: unknown
 
-   0b01: east/north
+   0b01: west/south
 
-   0b10: west/south
+   0b10: east/north
 
     
 
    0b11: stopped
 
-   bits 6-7:  facing direction – The geographical direction that the front of the item is facing. The
-   geographical meanings of these are defined during the set up of the scanners.
+   bits 6-7:  direction of travel – relative to the end of the item designated as front at installation
+   timedirection of motion
 
     
 
    0b00: unknown – The scanner did not determine a value for this item.
 
-    There could be scanners that can detect this but can’t detect forward/reverse motion and east/west
-   motion.
+   0b01: Forward
 
-   0b01: east/north
+   0b10: Reverse
 
-   0b10: west/south
-
-   0b11: reserved – Do not send, ignore on receipt.
+   0b11: Stationary
 
    bits 8-9: flags content that spans multiple EWP messages
 
